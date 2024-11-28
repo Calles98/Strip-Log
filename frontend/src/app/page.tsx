@@ -1,29 +1,33 @@
 "use client";
 
-import { redirect, useRouter } from "next/navigation";
 import { useState, useRef } from "react";
 
 const types = ["Standard", "Duplicates", "Blanks"];
 
 export default function Home() {
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]); // Store multiple files
   const [downloadUrl, setDownloadUrl] = useState("");
 
   const fileInputRef = useRef(null);
 
+  // Handle file selection
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    setFiles(Array.from(e.target.files)); // Store all selected files as an array
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file) {
-      alert("Please select a file!");
+    if (!files.length) {
+      alert("Please select at least one file!");
       return;
     }
 
     const formData = new FormData();
-    formData.append("file", file);
+    // Append all files to the FormData object
+    files.forEach((file) => {
+      formData.append("files", file); // Key must match the backend's expected key
+    });
 
     try {
       const response = await fetch("http://localhost:5000/upload", {
@@ -32,7 +36,7 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to upload file");
+        throw new Error("Failed to upload files");
       }
 
       // Create a Blob URL for the downloaded file
@@ -41,23 +45,28 @@ export default function Home() {
       setDownloadUrl(url);
 
       // Clear the file input after report is processed
-      setFile(null);
+      setFiles([]);
       if (fileInputRef.current) {
         fileInputRef.current.value = ""; // Reset the input field
       }
     } catch (error) {
-      console.error("Error uploading file:", error);
+      console.error("Error uploading files:", error);
     }
   };
 
   return (
     <div className="flex flex-col gap-y-10 min-h-screen justify-center items-center mx-auto">
-      <div></div>
       <h1 className="m-4 text-xl font-bold">
-        Upload File to get the Strip Log
+        Upload Files to Get the Strip Log
       </h1>
-      <form onSubmit={handleSubmit}>
-        <input type="file" onChange={handleFileChange} ref={fileInputRef} />
+      <form encType="multipart/form-data" onSubmit={handleSubmit}>
+        <input
+          type="file"
+          onChange={handleFileChange}
+          ref={fileInputRef}
+          name="files"
+          multiple
+        />
         <button
           type="submit"
           className="bg-slate-500 text-white p-5 rounded-md"

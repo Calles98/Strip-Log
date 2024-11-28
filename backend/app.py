@@ -20,27 +20,38 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
- 
-   
-    file = request.files['file']
+    # Ensure the 'files' key exists in the request
+    if 'files' not in request.files:
+        return 'No files part in the request', 400
 
-    if file.filename == '':
-        return 'No selected file'
-    
-    if file:
-        filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-        file.save(filepath)
+    files = request.files.getlist('files')  # Retrieve all files from the request
 
-        # Select notebook based on the analyisis type
-        notbook_filename = "Notebooks/Untitled11.ipynb"
+    if not files or all(file.filename == '' for file in files):
+        return 'No selected file', 400
 
-        # Call Jupyter notebook processing function
-        result_filepath = process_notebook(filepath, notbook_filename)
+    # Process each uploaded file
+    result_files = []
+    for file in files:
+        if file and file.filename != '':
+            # Save the file
+            filepath = os.path.join(UPLOAD_FOLDER, file.filename)
+            file.save(filepath)
+            result_files.append(filepath)
 
-        return send_file(result_filepath, as_attachment=True)
+    # Notebook to execute
+    notebook_filename = "Notebooks/Untitled11.ipynb"
+
+    # Call Jupyter notebook processing function
+    print(result_files)
+    result_filepath = process_notebook(result_files, notebook_filename)
+
+    # Send the final processed result
+    return send_file(result_filepath, as_attachment=True)
 
 
-def process_notebook(filepath, notebook_filename):
+
+
+def process_notebook(filepaths, notebook_filename):
     result_pdf = os.path.join(RESULT_FOLDER, 'report.html')
     temp_notebook = 'temp_notebook.ipynb'
 
@@ -52,7 +63,8 @@ def process_notebook(filepath, notebook_filename):
         notebook_content = file.read()
 
     # Update the notebook content with the file path
-    notebook_content = notebook_content.replace('FILE_PATH_PLACEHOLDER', filepath)
+    filepaths_str = repr(filepaths) # Convert list to a string literal (e.g., "['file1.csv', 'file2.csv']")
+    notebook_content = notebook_content.replace('FILE_PATH_PLACEHOLDER', filepaths_str)
 
 
     with open(temp_notebook, 'w') as file:
