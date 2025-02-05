@@ -1,10 +1,11 @@
-from flask import Flask, request, send_file, render_template
+from flask import Flask, json, jsonify, request, send_file, render_template, url_for
 import os
 import nbformat
 from flask_cors import CORS
 from nbconvert import PDFExporter
 import subprocess
 import shutil
+import pandas as pd
 
 app = Flask(__name__)
 CORS(app)
@@ -27,6 +28,9 @@ def upload_file():
         return 'No files part in the request', 400
 
     files = request.files.getlist('files')  # Retrieve all files from the request
+    checkedLogs = request.form.getlist('CheckedItems');
+
+    print(checkedLogs)
 
     if not files or all(file.filename == '' for file in files):
         return 'No selected file', 400
@@ -39,21 +43,19 @@ def upload_file():
             filepath = os.path.join(UPLOAD_FOLDER, file.filename)
             file.save(filepath)
             result_files.append(filepath)
-
+    
     # Notebook to execute
     notebook_filename = "Notebooks/Untitled11.ipynb"
 
     # Call Jupyter notebook processing function
     print(result_files)
-    result_filepath = process_notebook(result_files, notebook_filename)
+    result_filepath = process_notebook(result_files, checkedLogs, notebook_filename)
+
 
     # Send the final processed result
     return send_file(result_filepath, as_attachment=True)
 
-
-
-
-def process_notebook(filepaths, notebook_filename):
+def process_notebook(filepaths, checkedLogs, notebook_filename):
     result_pdf = os.path.join(RESULT_FOLDER, 'report.html')
     temp_notebook = 'temp_notebook.ipynb'
 
@@ -66,7 +68,9 @@ def process_notebook(filepaths, notebook_filename):
 
     # Update the notebook content with the file path
     filepaths_str = repr(filepaths) # Convert list to a string literal (e.g., "['file1.csv', 'file2.csv']")
+    checked_logs_str = repr(checkedLogs)
     notebook_content = notebook_content.replace('FILE_PATH_PLACEHOLDER', filepaths_str)
+    notebook_content = notebook_content.replace('LOGS_PLACEHOLDER', checked_logs_str)
 
 
     with open(temp_notebook, 'w') as file:
