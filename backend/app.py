@@ -1,11 +1,8 @@
-from flask import Flask, json, jsonify, request, send_file, render_template, url_for
+from flask import Flask, request, send_file, render_template
 import os
-import nbformat
 from flask_cors import CORS
-from nbconvert import PDFExporter
 import subprocess
 import shutil
-import pandas as pd
 
 app = Flask(__name__)
 CORS(app)
@@ -30,7 +27,7 @@ def upload_file():
     files = request.files.getlist('files')  # Retrieve all files from the request
     checkedLogs = request.form.getlist('CheckedItems');
 
-    print(checkedLogs)
+    #print(checkedLogs)
 
     if not files or all(file.filename == '' for file in files):
         return 'No selected file', 400
@@ -45,10 +42,10 @@ def upload_file():
             result_files.append(filepath)
     
     # Notebook to execute
-    notebook_filename = "Notebooks/Untitled11.ipynb"
+    notebook_filename = "Notebooks/StripLog.ipynb"
 
     # Call Jupyter notebook processing function
-    print(result_files)
+    #print(result_files)
     result_filepath = process_notebook(result_files, checkedLogs, notebook_filename)
 
 
