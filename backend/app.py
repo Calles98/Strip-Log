@@ -25,7 +25,7 @@ def upload_file():
         return 'No files part in the request', 400
 
     files = request.files.getlist('files')  # Retrieve all files from the request
-    checkedLogs = request.form.getlist('CheckedItems');
+    checkedLogs = request.form.getlist('CheckedItems')
 
     #print(checkedLogs)
 
