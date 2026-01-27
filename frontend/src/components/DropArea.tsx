@@ -16,7 +16,7 @@ function DropArea({ files, setFiles }: Props) {
     const droppedFiles = Array.from(e.dataTransfer.files);
 
     if (droppedFiles.length > 0) {
-      setFiles(prev => [...prev, ...droppedFiles]);
+      setFiles((prev) => [...prev, ...droppedFiles]);
     }
   };
 
@@ -36,19 +36,7 @@ function DropArea({ files, setFiles }: Props) {
         <FaFileUpload className="text-xl" />
       </div>
 
-      {files.length > 0 ? (
-        <div className="space-y-2">
-          {files.map((file, idx) => (
-            <h2 key={idx} className="text-sm">
-              {file.name}
-            </h2>
-          ))}
-        </div>
-      ) : (
-        <h2 className="text-xl font-bold">
-          Click to upload or drag and drop
-        </h2>
-      )}
+      <h2 className="text-xl font-bold">Click to upload or drag and drop</h2>
     </div>
   );
 }
