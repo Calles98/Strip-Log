@@ -8,7 +8,6 @@ type Props = {
 };
 
 function CheckBox({ log, checkedItems, handleCheckBoxChange }: Props) {
- 
   return (
     <div>
       <Checkbox
@@ -35,5 +34,3 @@ function CheckBox({ log, checkedItems, handleCheckBoxChange }: Props) {
 }
 
 export default CheckBox;
-
-
